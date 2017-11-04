@@ -26,6 +26,10 @@ public class MyBigInteger {
 
     }
 
+    public void divide(MyBigInteger divisor, MyBigInteger quotient, MyBigInteger remain) {
+        
+    }
+
     public void incOne() {
         int i;
         for (i = this.bytesBI.length - 1; i >= 0; i--) {
@@ -76,18 +80,15 @@ public class MyBigInteger {
             randomBytes[randomBytes.length - 1] += 1;
         }
         MyBigInteger max = MyBigInteger.max(byteLength);
+        MyBigInteger myBI = new MyBigInteger(randomBytes);
         while (true) {
-            MyBigInteger myBI = new MyBigInteger(randomBytes);
             if (isPrime(myBI)) {
                 return myBI;
             } else {
                 myBI.incOne();
                 myBI.incOne();
                 if (myBI.compareTo(max) > 0) {
-                    r.nextBytes(randomBytes);
-                    if (randomBytes[randomBytes.length - 1] % 2 == 0) {
-                        randomBytes[randomBytes.length - 1] += 1;
-                    }
+                    return randomPrime(byteLength, r);
                 }
             }
         }
