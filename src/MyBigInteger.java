@@ -75,9 +75,43 @@ public class MyBigInteger {
         }
     }
 
+    public void trim() {
+        int i = 0;
+        while (true) {
+            if (this.bytesBI[i] == 0) {
+                i++;
+            } else {
+                break;
+            }
+        }
+        byte[] bytes = new byte[this.bytesBI.length - i];
+        System.arraycopy(this.bytesBI, i, bytes, 0, bytes.length);
+        setBytesBI(bytes);
+    }
+
     public void subtract(MyBigInteger a) {
         assert this.compareTo(a) > 0;
-        
+        int borrow = 0, nextBorrow;
+        for (int i = 1; i <= this.bytesBI.length; i++) {
+            int fromThis = (int)(this.bytesBI[this.bytesBI.length - i]) & 0xff;
+            int fromA;
+            if (i <= a.bytesBI.length) {
+                fromA = (int)(a.bytesBI[a.bytesBI.length - i]) & 0xff;
+            } else {
+                fromA = 0;
+            }
+            fromThis = fromThis - borrow;
+            if (fromThis < fromA) {
+                borrow = 1;
+            } else {
+                borrow = 0;
+            }
+            if (fromThis == -1) {
+                fromThis = 0xff;
+            }
+            int result = fromThis - fromA;
+            this.bytesBI[this.bytesBI.length - i] = (byte)result;
+        }
     }
 
     public void setBytesBI(byte[] bytes) {
@@ -103,13 +137,21 @@ public class MyBigInteger {
         for (int i = 0; i < 256; i++) {
             if (this.compareTo(product) < 0) {
                 quotient = (byte)i;
+                this.copyTo(remain);
+                remain.subtract(previous);
                 break;
             }
             product.add(divisor);
             previous.add(divisor);
-            //TODO: remain
         }
         return quotient;
+    }
+
+    public void appendByte(byte tail) {
+        byte[] bytes = new byte[this.bytesBI.length + 1];
+        System.arraycopy(this.bytesBI, 0, bytes, 0, this.bytesBI.length);
+        bytes[bytes.length - 1] = tail;
+        setBytesBI(bytes);
     }
 
     public void divide(MyBigInteger divisor, MyBigInteger quotient, MyBigInteger remain) {
@@ -131,12 +173,23 @@ public class MyBigInteger {
         int lengthOfQuotient = this.bytesBI.length - i;
         byte[] bytes = new byte[lengthOfQuotient];
         quotient.setBytesBI(bytes);
+        //quetient[0] ---- this[i]
+        //for every byte of quotient
+        MyBigInteger currentRemain = new MyBigInteger(0);
         for (int j = 0; j < quotient.bytesBI.length; j++) {
-            MyBigInteger currentToDivide = this.firstNBytes(j + i + 1);
-            MyBigInteger currentRemain = new MyBigInteger(0);
+            MyBigInteger currentToDivide = new MyBigInteger(0);
+            if (j == 0) {
+                currentToDivide = this.firstNBytes(j + i + 1);
+            } else {
+                currentRemain.copyTo(currentToDivide);
+                byte comeDown = this.bytesBI[j + i];
+                currentToDivide.appendByte(comeDown);
+            }
             byte currentQuotient;
-            //currentQuotient =
+            currentQuotient = currentToDivide.divideSimple(divisor, currentRemain);
+            quotient.bytesBI[j] = currentQuotient;
         }
+        currentRemain.copyTo(remain);
     }
 
     public void incOne() {
