@@ -6,7 +6,7 @@ public class MyBigInteger {
     private byte[] bytesBI;
 
     public MyBigInteger(byte[] bytes){
-        while (bytes[0] == 0) {
+        while (bytes[0] == 0 && bytes.length != 1) {
             byte[] newBytes = new byte[bytes.length - 1];
             System.arraycopy(bytes, 1, newBytes, 0, newBytes.length);
             bytes = newBytes;
@@ -22,18 +22,27 @@ public class MyBigInteger {
     }
 
     public static void main(String[] args){
-        byte a = (byte)0xff;
-        byte b = (byte)0xff;
-
-        int c = ((int)a & 0xff) + ((int)b & 0xff);
-        a = (byte)(c % 256);
-        b = (byte)(c / 256);
-
-        System.out.print((int)a & 0xff);
+        byte[] a = {3, 5, 7, 78, 23, 123, 101, 89};
+        byte[] b = {5, 123, 8, 8, 101, 32};
+        MyBigInteger mba = new MyBigInteger(a);
+        MyBigInteger mbb = new MyBigInteger(b);
+        MyBigInteger quotient = new MyBigInteger(0);
+        MyBigInteger remain = new MyBigInteger(0);
+        mba.divide(mbb, quotient, remain);
+        quotient.print();
+        remain.print();
     }
 
     public static boolean isPrime(MyBigInteger myBI) {
         return true;
+    }
+
+    public void print() {
+        for (int i = 0; i < this.bytesBI.length; i++) {
+            System.out.print((int)this.bytesBI[i] & 0xff);
+            System.out.print(" ");
+        }
+        System.out.println();
     }
 
     public void addInt(int add) {
@@ -68,7 +77,7 @@ public class MyBigInteger {
                 fromA = (int)(a.bytesBI[a.bytesBI.length - i]) & 0xff;
             }
             fromThis = (int)(this.bytesBI[this.bytesBI.length - i]) & 0xff;
-            sum = ((int)a.bytesBI[a.bytesBI.length - i] & 0xff) + ((int)this.bytesBI[this.bytesBI.length - i] & 0xff) + ((int)carry & 0xff);
+            sum = fromA + fromThis + carry;
             remain = (byte)(sum % 256);
             carry = (byte)(sum / 256);
             this.bytesBI[this.bytesBI.length - i] = remain;
@@ -78,7 +87,7 @@ public class MyBigInteger {
     public void trim() {
         int i = 0;
         while (true) {
-            if (this.bytesBI[i] == 0) {
+            if (this.bytesBI[i] == 0 && i < this.bytesBI.length - 1) {
                 i++;
             } else {
                 break;
@@ -112,6 +121,7 @@ public class MyBigInteger {
             int result = fromThis - fromA;
             this.bytesBI[this.bytesBI.length - i] = (byte)result;
         }
+        this.trim();
     }
 
     public void setBytesBI(byte[] bytes) {
@@ -160,7 +170,7 @@ public class MyBigInteger {
             byte[] bytes = new byte[1];
             bytes[0] = (byte)0;
             quotient.setBytesBI(bytes);
-            divisor.copyTo(remain);
+            this.copyTo(remain);
             return;
         }
         int i;
@@ -225,10 +235,17 @@ public class MyBigInteger {
     }
 
     public int compareTo(MyBigInteger myBI) {
+        if (this.getByteLength() > myBI.getByteLength()) {
+            return 1;
+        } else if (this.getByteLength() < myBI.getByteLength()) {
+            return -1;
+        }
         for (int i = 0; i < this.getByteLength(); i++) {
-            if (this.bytesBI[i] > myBI.getBytesBI()[i]) {
+            int a  = (int)this.bytesBI[i] & 0xff;
+            int b  = (int)myBI.bytesBI[i] & 0xff;
+            if (a > b) {
                 return 1;
-            } else if (this.bytesBI[i] < myBI.getBytesBI()[i]) {
+            } else if (a < b) {
                 return -1;
             }
         }
