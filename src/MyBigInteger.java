@@ -15,15 +15,15 @@ public class MyBigInteger {
     }
 
     public MyBigInteger(int n) {
-        if (n == 0) {
+        if (n < 10) {
             this.bytesBI = new byte[1];
-            this.bytesBI[0] = (byte)0;
+            this.bytesBI[0] = (byte)n;
         }
     }
 
     public static void main(String[] args){
-        byte[] a = {3, 5, 7, 78, 23, 123, 101, 89};
-        byte[] b = {5, 123, 8, 8, 101, 32};
+        byte[] a = {12};
+        byte[] b = {5};
         MyBigInteger mba = new MyBigInteger(a);
         MyBigInteger mbb = new MyBigInteger(b);
         MyBigInteger quotient = new MyBigInteger(0);
@@ -33,8 +33,35 @@ public class MyBigInteger {
         remain.print();
     }
 
+    public boolean diviseable(MyBigInteger divisor) {
+        MyBigInteger quotient = new MyBigInteger(0);
+        MyBigInteger remain = new MyBigInteger(0);
+        this.divide(divisor, quotient, remain);
+        MyBigInteger n0 = new MyBigInteger(0);
+        if (remain.compareTo(n0) == 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public static boolean isPrime(MyBigInteger myBI) {
-        return true;
+        if (myBI.getByteLength() == 1) {
+            int n = (int)myBI.getBytesBI()[0];
+            if (n == 2 || n == 3) {
+                return true;
+            }
+        }
+        MyBigInteger n2 = new MyBigInteger(2);
+        MyBigInteger n3 = new MyBigInteger(3);
+        if (myBI.diviseable(n2) || myBI.diviseable(n3)) {
+            return false;
+        }
+        MyBigInteger i = new MyBigInteger(5);
+        MyBigInteger w = new MyBigInteger(2);
+        MyBigInteger n6 = new MyBigInteger(6);
+
+        while ()
     }
 
     public void print() {
