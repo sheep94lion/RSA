@@ -15,22 +15,32 @@ public class MyBigInteger {
     }
 
     public MyBigInteger(int n) {
-        if (n < 10) {
+        if (n < 256) {
             this.bytesBI = new byte[1];
             this.bytesBI[0] = (byte)n;
         }
     }
 
     public static void main(String[] args){
-        byte[] a = {12};
-        byte[] b = {5};
+        Random r;
+        r = new Random();
+        boolean bl = isPrime(new MyBigInteger(113));
+        MyBigInteger rp = randomPrime(32, r);
+        rp.print();
+        int c = 245;
+        byte bc = (byte)c;
+        byte[] a = {3, 5, 7, 78, 23, 123, 101, 89};
+        byte[] b = {1, 0, 0};
         MyBigInteger mba = new MyBigInteger(a);
         MyBigInteger mbb = new MyBigInteger(b);
         MyBigInteger quotient = new MyBigInteger(0);
         MyBigInteger remain = new MyBigInteger(0);
-        mba.divide(mbb, quotient, remain);
-        quotient.print();
-        remain.print();
+        MyBigInteger product = new MyBigInteger(0);
+        //product = mba.multiply(mba);
+        //product.print();
+        //mba.divide(mbb, quotient, remain);
+        //quotient.print();
+        //remain.print();
     }
 
     public boolean diviseable(MyBigInteger divisor) {
@@ -61,7 +71,18 @@ public class MyBigInteger {
         MyBigInteger w = new MyBigInteger(2);
         MyBigInteger n6 = new MyBigInteger(6);
 
-        while ()
+        while(i.multiply(i).compareTo(myBI) <= 0) {
+            i.print();
+            if (myBI.diviseable(i)) {
+                return false;
+            }
+            i.add(w);
+            n6.subtract(w);
+            n6.copyTo(w);
+            n6 = new MyBigInteger(6);
+        }
+
+        return true;
     }
 
     public void print() {
@@ -191,6 +212,47 @@ public class MyBigInteger {
         setBytesBI(bytes);
     }
 
+    public void appendBytes(byte[] tail) {
+        byte[] bytes = new byte[this.getByteLength() + tail.length];
+        System.arraycopy(this.bytesBI, 0, bytes, 0, this.getByteLength());
+        System.arraycopy(tail, 0, bytes, this.getByteLength(), tail.length);
+        setBytesBI(bytes);
+    }
+
+    public void appendZeroByte(int n) {
+        byte[] bytesZero = new byte[n];
+        Arrays.fill(bytesZero, (byte)0);
+        appendBytes(bytesZero);
+    }
+
+    public MyBigInteger multiplySimple(int a) {
+        byte[] bytes = new byte[this.getByteLength() + 1];
+        MyBigInteger product = new MyBigInteger(0);
+        product.setBytesBI(bytes);
+        int carry = 0;
+        for (int i = 0; i < this.getByteLength(); i++) {
+            int fromThis = ((int)this.bytesBI[this.getByteLength() - 1 - i]) & 0xff;
+            int currentProduct = fromThis * a + carry;
+            int remain = currentProduct % 256;
+            carry = currentProduct / 256;
+            product.bytesBI[product.getByteLength() - 1 - i] = (byte)remain;
+        }
+        product.bytesBI[0] = (byte)carry;
+        product.trim();
+        return product;
+    }
+
+    public MyBigInteger multiply(MyBigInteger a) {
+        MyBigInteger product = new MyBigInteger(0);
+        for (int i = 0; i < a.getByteLength(); i++) {
+            int currentByteNumber = ((int)a.bytesBI[i]) & 0xff;
+            MyBigInteger currentProduct = this.multiplySimple(currentByteNumber);
+            currentProduct.appendZeroByte(a.getByteLength() - 1 - i);
+            product.add(currentProduct);
+        }
+        return product;
+    }
+
     public void divide(MyBigInteger divisor, MyBigInteger quotient, MyBigInteger remain) {
         //Find the first position of quotient
         if (this.compareTo(divisor) < 0) {
@@ -280,6 +342,7 @@ public class MyBigInteger {
     }
 
     public static MyBigInteger randomPrime(int byteLength, Random r) {
+        System.out.println("call randomPrime");
         byte[] randomBytes = new byte[byteLength];
         r.nextBytes(randomBytes);
         if (randomBytes[randomBytes.length - 1] % 2 == 0) {
@@ -291,11 +354,15 @@ public class MyBigInteger {
             if (isPrime(myBI)) {
                 return myBI;
             } else {
+                /*
                 myBI.incOne();
                 myBI.incOne();
+                System.out.println("next candidate");
                 if (myBI.compareTo(max) > 0) {
                     return randomPrime(byteLength, r);
                 }
+                */
+                return randomPrime(byteLength, r);
             }
         }
     }
