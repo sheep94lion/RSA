@@ -22,25 +22,34 @@ public class MyBigInteger {
     }
 
     public static void main(String[] args){
-        Random r;
-        r = new Random();
-        boolean bl = isPrime(new MyBigInteger(113));
-        MyBigInteger rp = randomPrime(32, r);
-        rp.print();
+        byte ii = -128;
+        byte jj = (byte)(ii >>> 3);
+        //Random r;
+        //r = new Random();
+        //boolean bl = isPrime(new MyBigInteger(113));
+        //MyBigInteger rp = randomPrime(32, r);
+        //rp.print();
         int c = 245;
         byte bc = (byte)c;
-        byte[] a = {3, 5, 7, 78, 23, 123, 101, 89};
-        byte[] b = {1, 0, 0};
+        byte[] a = {3, 5, 7, 78, 23, -27, 101, 89, -128, 0, 0};
+        byte[] b = {1, -1, 0};
         MyBigInteger mba = new MyBigInteger(a);
+        MyBigInteger mbaa = new MyBigInteger(0);
+        mba.copyTo(mbaa);
+        mba.print();
+        //mba.rightShift(4);
+        //mba.rightShift(4);
+        int r = mba.getRAndBeD();
+        mba.print();
         MyBigInteger mbb = new MyBigInteger(b);
         MyBigInteger quotient = new MyBigInteger(0);
         MyBigInteger remain = new MyBigInteger(0);
-        MyBigInteger product = new MyBigInteger(0);
-        //product = mba.multiply(mba);
+        //MyBigInteger product = new MyBigInteger(0);
+        //product = mba.multiply(mbb);
         //product.print();
-        //mba.divide(mbb, quotient, remain);
-        //quotient.print();
-        //remain.print();
+        mbaa.divide(mba, quotient, remain);
+        quotient.print();
+        remain.print();
     }
 
     public boolean diviseable(MyBigInteger divisor) {
@@ -62,13 +71,36 @@ public class MyBigInteger {
         this.bytesBI = bytes;
     }
 
+    public void rightShift(int n) {
+        if (n == 0) {
+            return;
+        }
+        int[] masks = {0x1, 0x3, 0x7, 0xf, 0x1f, 0x3f, 0x7f, 0xff};
+        int mask = masks[8-n-1];
+        //n should be smaller than 8
+        for (int i = this.getByteLength() - 1; i >= 0; i--) {
+            if (i < this.getByteLength() - 1) {
+                byte temp = (byte)(this.bytesBI[i] << (8-n));
+                this.bytesBI[i + 1] = (byte)(this.bytesBI[i + 1] | temp);
+            }
+            this.bytesBI[i] = (byte)((this.bytesBI[i] >>> n) & mask);
+        }
+        this.trim();
+    }
+
     public int getRAndBeD() {
         int r = 0;
         while (this.bytesBI[this.getByteLength() - 1 - r / 8] == (byte)0) {
             r = r + 8;
         }
         this.removeLastNBytes(r / 8);
-
+        int nToShift = 0;
+        while ((this.bytesBI[this.getByteLength() - 1] & (1 << nToShift)) == 0) {
+            nToShift++;
+            r++;
+        }
+        this.rightShift(nToShift);
+        return r;
     }
 
     public static boolean witnessLoop(MyBigInteger n, int k) {
@@ -79,6 +111,8 @@ public class MyBigInteger {
         nD.subtract(new MyBigInteger(1));
         nD.copyTo(nM1);
         r = nD.getRAndBeD();
+
+        return true;
     }
 
     public static boolean isPrime(MyBigInteger myBI) {
