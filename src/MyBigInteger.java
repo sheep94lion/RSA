@@ -55,6 +55,32 @@ public class MyBigInteger {
         }
     }
 
+    public void removeLastNBytes(int n) {
+        byte[] bytes = new byte[this.getByteLength() - n];
+        int newL = this.getByteLength() - n;
+        System.arraycopy(this.bytesBI, 0, bytes, 0, newL);
+        this.bytesBI = bytes;
+    }
+
+    public int getRAndBeD() {
+        int r = 0;
+        while (this.bytesBI[this.getByteLength() - 1 - r / 8] == (byte)0) {
+            r = r + 8;
+        }
+        this.removeLastNBytes(r / 8);
+
+    }
+
+    public static boolean witnessLoop(MyBigInteger n, int k) {
+        int r = 0;
+        MyBigInteger nD = new MyBigInteger(0);
+        MyBigInteger nM1 = new MyBigInteger(0);
+        n.copyTo(nD);;
+        nD.subtract(new MyBigInteger(1));
+        nD.copyTo(nM1);
+        r = nD.getRAndBeD();
+    }
+
     public static boolean isPrime(MyBigInteger myBI) {
         if (myBI.getByteLength() == 1) {
             int n = (int)myBI.getBytesBI()[0];
