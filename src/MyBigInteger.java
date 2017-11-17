@@ -1,5 +1,7 @@
+
 import java.util.Arrays;
 import java.util.Random;
+import java.math.BigInteger;
 
 public class MyBigInteger {
     //The first byte is the most significant byte
@@ -22,26 +24,34 @@ public class MyBigInteger {
     }
 
     public static void main(String[] args){
+        int n = 8 / 9;
         byte ii = -128;
         byte jj = (byte)(ii >>> 3);
-        //Random r;
-        //r = new Random();
+        Random r;
+        r = new Random();
         //boolean bl = isPrime(new MyBigInteger(113));
-        //MyBigInteger rp = randomPrime(32, r);
-        //rp.print();
-        int c = 245;
-        byte bc = (byte)c;
-        byte[] a = {3, 5, 7, 78, 23, -27, 101, 89, -128, 0, 0};
-        byte[] b = {1, -1, 0};
+        MyBigInteger rp = randomPrime(128, r, 1);
+        rp.print();
+        BigInteger rpJ = rp.giveupAnd2BigInteger();
+        System.out.print(rpJ.isProbablePrime(100));
+        /*
+        byte[] a = {-1, 67};
+        byte[] b = {101, 89};
+        byte[] c = {1, -1};
+
         MyBigInteger mba = new MyBigInteger(a);
         MyBigInteger mbaa = new MyBigInteger(0);
         mba.copyTo(mbaa);
         mba.print();
         //mba.rightShift(4);
         //mba.rightShift(4);
-        int r = mba.getRAndBeD();
-        mba.print();
+        //int r = mba.getRAndBeD();
+        //mba.print();
         MyBigInteger mbb = new MyBigInteger(b);
+        MyBigInteger mbc = new MyBigInteger(c);
+        MyBigInteger rr = mba.powMod(mbb, mbc);
+        rr.print();
+
         MyBigInteger quotient = new MyBigInteger(0);
         MyBigInteger remain = new MyBigInteger(0);
         //MyBigInteger product = new MyBigInteger(0);
@@ -50,6 +60,7 @@ public class MyBigInteger {
         mbaa.divide(mba, quotient, remain);
         quotient.print();
         remain.print();
+        */
     }
 
     public boolean diviseable(MyBigInteger divisor) {
@@ -103,16 +114,154 @@ public class MyBigInteger {
         return r;
     }
 
-    public static boolean witnessLoop(MyBigInteger n, int k) {
+    public static boolean witnessLoop(MyBigInteger n, int k, Random rand, int alg) {
         int r = 0;
         MyBigInteger nD = new MyBigInteger(0);
+        MyBigInteger n1 = new MyBigInteger(1);
+        MyBigInteger n2 = new MyBigInteger(2);
         MyBigInteger nM1 = new MyBigInteger(0);
-        n.copyTo(nD);;
+        MyBigInteger nM2 = new MyBigInteger(0);
+        n.copyTo(nD);
+        n.copyTo(nM2);
+        nM2.subtract(new MyBigInteger(2));
         nD.subtract(new MyBigInteger(1));
         nD.copyTo(nM1);
         r = nD.getRAndBeD();
 
+        for (int i = 0; i < k; i++) {
+            int l = nM2.getByteLength();
+            byte[] bytes = new byte[l];
+            rand.nextBytes(bytes);
+            MyBigInteger randTemp = new MyBigInteger(bytes);
+            MyBigInteger randR = new MyBigInteger(0);
+            MyBigInteger quotient = new MyBigInteger(0);
+            randTemp.divide(nM1, quotient, randR);
+            if (randR.compareTo(n2) < 0) {
+                n2.copyTo(randR);
+            }
+            MyBigInteger x = new MyBigInteger(0);
+            x = randR.powMod(nD, n, alg);
+            if (x.compareTo(n1) == 0 || x.compareTo(nM1) == 0) {
+                continue;
+            }
+
+            for (int j = 0; j < r - 1; j++) {
+                x = x.powMod(n2, n, alg);
+                if (x.compareTo(n1) == 0) {
+                    return false;
+                }
+                if (x.compareTo(nM1) == 0) {
+                    break;
+                }
+            }
+            if (x.compareTo(nM1) == 0) {
+                continue;
+            }
+            return false;
+        }
         return true;
+    }
+
+    public int getbitLength() {
+        int nByte = this.getByteLength() - 1;
+        int firstByte = this.bytesBI[0] & 0xff;
+        int i = 8;
+        while (true) {
+            int mask = 1 << (i - 1);
+            if ((firstByte & mask) != 0) {
+                break;
+            }
+            i--;
+        }
+        return nByte * 8 + i;
+    }
+
+    public int getBit(int n) {
+        //count from right, from 0
+        int iByte = n / 8;
+        int cByte = this.bytesBI[this.getByteLength() - 1 - iByte] & 0xff;
+        int iBit = n - iByte * 8;
+        int mask = 1 << (iBit);
+        if ((cByte & mask) == 0) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+
+    public void mod(MyBigInteger n) {
+        if (this.compareTo(n) >= 0) {
+            MyBigInteger temp = new MyBigInteger(0);
+            MyBigInteger q = new MyBigInteger(0);
+            this.copyTo(temp);
+            temp.divide(n, q, this);
+        }
+    }
+
+    public MyBigInteger powMod(MyBigInteger pow, MyBigInteger n) {
+        MyBigInteger n0 = new MyBigInteger(0);
+        MyBigInteger remain = new MyBigInteger(1);
+        if (pow.compareTo(n0) == 0) {
+            return remain;
+        }
+        int nBitLength = pow.getbitLength();
+        MyBigInteger refs[] = new MyBigInteger[nBitLength];
+        MyBigInteger ref = new MyBigInteger(0);
+        this.copyTo(ref);
+        for (int i = 0; i < nBitLength; i++) {
+            ref.mod(n);
+            refs[i] = ref;
+            ref = new MyBigInteger(0);
+            ref = refs[i].multiply(refs[i]);
+        }
+        for (int i = 0; i < nBitLength; i++) {
+            if (pow.getBit(i) == 1) {
+                remain = remain.multiply(refs[i]);
+                remain.mod(n);
+            }
+        }
+        /*
+        for (; i.compareTo(pow) < 0; i.incOne()) {
+            remain = this.multiply(remain);
+            if (remain.compareTo(n) >= 0) {
+                MyBigInteger temp = new MyBigInteger(0);
+                MyBigInteger q = new MyBigInteger(0);
+                remain.copyTo(temp);
+                temp.divide(n, q, remain);
+            }
+        }
+        */
+        return remain;
+    }
+
+    public BigInteger giveupAnd2BigInteger() {
+        byte[] bytes;
+        if (this.bytesBI[0] < 0) {
+            bytes = new byte[this.getByteLength() + 1];
+            bytes[0] = 0;
+            System.arraycopy(this.bytesBI, 0, bytes, 1, this.getByteLength());
+        } else {
+            bytes = new byte[this.getByteLength()];
+            System.arraycopy(this.bytesBI, 0, bytes, 0, this.getByteLength());
+        }
+        return new BigInteger(bytes);
+    }
+
+    public MyBigInteger powMod(MyBigInteger pow, MyBigInteger n, int alg) {
+        if (alg == 0) {
+            return this.powMod(pow, n);
+        }
+        BigInteger powJ = pow.giveupAnd2BigInteger();
+        BigInteger th = this.giveupAnd2BigInteger();
+        BigInteger nJ = n.giveupAnd2BigInteger();
+        BigInteger rJ = th.modPow(powJ, nJ);
+        byte[] bytes = rJ.toByteArray();
+        MyBigInteger r = new MyBigInteger(bytes);
+        return r;
+    }
+
+    public static boolean isPrime(MyBigInteger myBI, int k, Random rand, int alg) {
+        return witnessLoop(myBI, k, rand, alg);
     }
 
     public static boolean isPrime(MyBigInteger myBI) {
@@ -132,7 +281,7 @@ public class MyBigInteger {
         MyBigInteger n6 = new MyBigInteger(6);
 
         while(i.multiply(i).compareTo(myBI) <= 0) {
-            i.print();
+            //i.print();
             if (myBI.diviseable(i)) {
                 return false;
             }
@@ -303,6 +452,7 @@ public class MyBigInteger {
     }
 
     public MyBigInteger multiply(MyBigInteger a) {
+        //itself doesn't change
         MyBigInteger product = new MyBigInteger(0);
         for (int i = 0; i < a.getByteLength(); i++) {
             int currentByteNumber = ((int)a.bytesBI[i]) & 0xff;
@@ -352,19 +502,7 @@ public class MyBigInteger {
     }
 
     public void incOne() {
-        int i;
-        for (i = this.bytesBI.length - 1; i >= 0; i--) {
-            this.bytesBI[i]++;
-            if (this.bytesBI[i] > 0) {
-                break;
-            }
-        }
-        if (i == -1) {
-            byte[] newBytes = new byte[this.bytesBI.length + 1];
-            newBytes[0] = 1;
-            System.arraycopy(this.bytesBI, 0, newBytes, 1, this.bytesBI.length);
-            this.bytesBI = newBytes;
-        }
+        this.add(new MyBigInteger(1));
     }
 
     public static MyBigInteger max(int byteLength) {
@@ -401,8 +539,8 @@ public class MyBigInteger {
         return 0;
     }
 
-    public static MyBigInteger randomPrime(int byteLength, Random r) {
-        System.out.println("call randomPrime");
+    public static MyBigInteger randomPrime(int byteLength, Random r, int alg) {
+        //System.out.println("call randomPrime");
         byte[] randomBytes = new byte[byteLength];
         r.nextBytes(randomBytes);
         if (randomBytes[randomBytes.length - 1] % 2 == 0) {
@@ -411,18 +549,17 @@ public class MyBigInteger {
         MyBigInteger max = MyBigInteger.max(byteLength);
         MyBigInteger myBI = new MyBigInteger(randomBytes);
         while (true) {
-            if (isPrime(myBI)) {
+            if (isPrime(myBI, 50, r, alg)) {
                 return myBI;
             } else {
-                /*
-                myBI.incOne();
-                myBI.incOne();
-                System.out.println("next candidate");
+
+                myBI.add(new MyBigInteger(2));
+                //System.out.println("next candidate");
                 if (myBI.compareTo(max) > 0) {
-                    return randomPrime(byteLength, r);
+                    return randomPrime(byteLength, r, alg);
                 }
-                */
-                return randomPrime(byteLength, r);
+
+                //return randomPrime(byteLength, r);
             }
         }
     }
