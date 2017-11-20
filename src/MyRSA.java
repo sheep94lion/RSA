@@ -48,6 +48,9 @@ public class MyRSA {
     }
 
     public static void main(String[] args) {
+
+
+        /*
         MyRSA myrsa = new MyRSA(256);
         String input = "haoxiangdeifenkuai";
 
@@ -56,6 +59,7 @@ public class MyRSA {
         byte[] decryptedBytes = myrsa.decrypt(encryptedBytes);
 
         System.out.println("result: " + new String(decryptedBytes));
+        */
     }
 
     public byte[] encrypt(byte[] message)

@@ -1,4 +1,3 @@
-
 import java.util.Arrays;
 import java.util.Random;
 import java.math.BigInteger;
@@ -25,13 +24,17 @@ public class MyBigInteger {
 
     public static void main(String[] args){
         int n = 8 / 9;
-        byte ii = -128;
+        byte ii = (byte)255;
         byte jj = (byte)(ii >>> 3);
         Random r;
         r = new Random();
         //boolean bl = isPrime(new MyBigInteger(113));
-        MyBigInteger rp = randomPrime(128, r, 1);
+        long start = System.currentTimeMillis();
+        MyBigInteger rp = randomPrime(16, r, 0);
         rp.print();
+        long end = System.currentTimeMillis();
+        long duration = end - start;
+        System.out.println(duration);
         BigInteger rpJ = rp.giveupAnd2BigInteger();
         System.out.print(rpJ.isProbablePrime(100));
         /*
@@ -397,6 +400,34 @@ public class MyBigInteger {
     }
 
     private byte divideSimple(MyBigInteger divisor, MyBigInteger remain) {
+        if (this.compareTo(divisor) < 0) {
+            this.copyTo(remain);
+            return 0;
+        }
+        MyBigInteger maxP = divisor.multiplySimple(255);
+        if (this.compareTo(maxP) > 0) {
+            this.copyTo(remain);
+            remain.subtract(maxP);
+            return (byte)255;
+        }
+        int low = 0, high = 255;
+        while (true) {
+            int mid = (low + high) / 2;
+            MyBigInteger current = divisor.multiplySimple(mid);
+            MyBigInteger next = new MyBigInteger(0);
+            current.copyTo(next);
+            next.add(divisor);
+            if (current.compareTo(this) <= 0 && next.compareTo(this) > 0) {
+                this.copyTo(remain);
+                remain.subtract(current);
+                return (byte)mid;
+            } else if (current.compareTo(this) < 0) {
+                low = mid;
+            } else {
+                high = mid;
+            }
+        }
+        /*
         byte quotient = 0;
         MyBigInteger previous = new MyBigInteger(0);
         MyBigInteger product = new MyBigInteger(0);
@@ -412,6 +443,7 @@ public class MyBigInteger {
             previous.add(divisor);
         }
         return quotient;
+        */
     }
 
     public void appendByte(byte tail) {
@@ -562,5 +594,63 @@ public class MyBigInteger {
                 //return randomPrime(byteLength, r);
             }
         }
+    }
+
+    public MyBigInteger gcd(MyBigInteger b) {
+        MyBigInteger zero = new MyBigInteger(0);
+        MyBigInteger gcd = new MyBigInteger(0);
+        if (b.compareTo(zero) == 0) {
+            this.copyTo(gcd);
+            return gcd;
+        } else {
+            MyBigInteger r = new MyBigInteger(0);
+            this.copyTo(r);
+            r.mod(b);
+            return b.gcd(r);
+        }
+    }
+
+    public MyBigInteger[] gcdExtended(MyBigInteger b, MyBigInteger n) {
+        MyBigInteger one = new MyBigInteger(1);
+        MyBigInteger zero = new MyBigInteger(0);
+        if (b.compareTo(zero) == 0) {
+            MyBigInteger[] result = {this, one, zero};
+            return result;
+        }
+        MyBigInteger q = new MyBigInteger(0);
+        MyBigInteger r = new MyBigInteger(0);
+        this.divide(b, q, r);
+        MyBigInteger d = new MyBigInteger(0);
+        MyBigInteger u = new MyBigInteger(0);
+        MyBigInteger v = new MyBigInteger(0);
+        MyBigInteger[] rec = b.gcdExtended(r, n);
+        rec[0].copyTo(d);
+        rec[2].copyTo(u);
+        rec[1].copyTo(v);
+        MyBigInteger qu = q.multiply(u);
+        while (v.compareTo(qu) < 0) {
+            v.add(n);
+        }
+        v.subtract(q.multiply(u));
+        MyBigInteger result[] = {d, u, v};
+        return result;
+    }
+
+    public MyBigInteger modInverse(MyBigInteger n, int alg) {
+        if (alg == 1) {
+            BigInteger aJ = this.giveupAnd2BigInteger();
+            BigInteger nJ = n.giveupAnd2BigInteger();
+            BigInteger rJ = aJ.modInverse(nJ);
+            byte[] bytes = rJ.toByteArray();
+            MyBigInteger r = new MyBigInteger(bytes);
+            return r;
+        }
+        MyBigInteger ncopy = new MyBigInteger(0);
+        n.copyTo(ncopy);
+        MyBigInteger rec[] = this.gcdExtended(n, ncopy);
+        MyBigInteger in = new MyBigInteger(0);
+        rec[1].copyTo(in);
+        in.mod(n);
+        return in;
     }
 }
