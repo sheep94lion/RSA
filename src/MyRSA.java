@@ -1,3 +1,4 @@
+import java.io.UnsupportedEncodingException;
 import java.util.Random;
 
 public class MyRSA {
@@ -10,14 +11,18 @@ public class MyRSA {
     private MyBigInteger phi;
     private MyBigInteger d;
     private MyBigInteger e;
+    private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
 
     public MyRSA(int bitLength) {
         this.bitLength = bitLength;
+        /*
         if (bitLength < 128) {
             alg = 0;
         } else {
             alg = 1;
         }
+        */
+        alg = 1;
         rand = new Random();
         this.p = MyBigInteger.randomPrime(bitLength/8, rand, alg);
         this.q = MyBigInteger.randomPrime(bitLength/8, rand, alg);
@@ -50,16 +55,16 @@ public class MyRSA {
     public static void main(String[] args) {
 
 
-        /*
-        MyRSA myrsa = new MyRSA(256);
-        String input = "haoxiangdeifenkuai";
+
+        MyRSA myrsa = new MyRSA(64);
+        String input = "ha";
 
         byte[] encryptedBytes = myrsa.encrypt(input.getBytes());
 
         byte[] decryptedBytes = myrsa.decrypt(encryptedBytes);
 
         System.out.println("result: " + new String(decryptedBytes));
-        */
+
     }
 
     public byte[] encrypt(byte[] message)
@@ -88,5 +93,35 @@ public class MyRSA {
         MyBigInteger de = new MyBigInteger(message);
         MyBigInteger deed = de.powMod(this.d, this.n, alg);
         return deed.getBytesBI();
+    }
+
+    public String getPString() {
+        return bytesToHex(p.getBytesBI());
+    }
+
+    public String getQString() {
+        return bytesToHex(q.getBytesBI());
+    }
+
+    public String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
+
+    public String getNString() {
+        return bytesToHex(n.getBytesBI());
+    }
+
+    public String getDString() {
+        return bytesToHex(d.getBytesBI());
+    }
+
+    public String getEString() {
+        return bytesToHex(e.getBytesBI());
     }
 }
