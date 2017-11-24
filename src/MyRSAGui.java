@@ -8,8 +8,8 @@ public class MyRSAGui {
     JFrame f;
     JComboBox cb;
     JLabel l1;
-    JButton btGenerateKey;
-    JTextArea areaE, areaN, areaD, areaP, areaQ;
+    JButton btGenerateKey, btEncrypt, btDecrypt;
+    JTextArea areaE, areaN, areaD, areaP, areaQ, areaMsg, areaEMsg, areaDMsg;
     MyRSA myRSA;
     String encryptLevels[] = {"RSA-32", "RSA-64", "RSA-128", "RSA-256", "RSA-512", "RSA-1024"};
     int encryptLevelsI[] = {32, 64, 128, 256, 512, 1024};
@@ -27,6 +27,16 @@ public class MyRSAGui {
         btGenerateKey.setBounds(210, 20, 120, 30);
         btGenerateKey.addActionListener(new BtGenerateKeyAction());
         f.add(btGenerateKey);
+
+        btEncrypt = new JButton("Encrypt Message");
+        btEncrypt.setBounds(410, 20, 150, 30);
+        btEncrypt.addActionListener(new BtEncryptAction());
+        f.add(btEncrypt);
+
+        btDecrypt = new JButton("Decrypt Message");
+        btDecrypt.setBounds(600, 20, 150, 30);
+        btDecrypt.addActionListener(new BtDecryptAction());
+        f.add(btDecrypt);
 
         JLabel lN = new JLabel("Public: N");
         lN.setBounds(10, 70, 80, 20);
@@ -79,12 +89,46 @@ public class MyRSAGui {
         scrollQ.setBounds(10, 580, 320, 80);
         f.add(scrollQ);
 
+        JLabel lMsg = new JLabel("Message:");
+        lMsg.setBounds(410, 70, 80, 20);
+        f.add(lMsg);
+        areaMsg = new JTextArea();
+        areaMsg.setEditable (true); // set textArea non-editable
+        areaMsg.setLineWrap(true);
+        JScrollPane scrollMsg = new JScrollPane ( areaMsg );
+        scrollMsg.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
+        scrollMsg.setBounds(410, 100, 320, 80);
+        f.add(scrollMsg);
+
+        JLabel lEMsg = new JLabel("Encypted Message:");
+        lEMsg.setBounds(410, 190, 130, 20);
+        f.add(lEMsg);
+        areaEMsg = new JTextArea();
+        areaEMsg.setEditable (true); // set textArea non-editable
+        areaEMsg.setLineWrap(true);
+        JScrollPane scrollEMsg = new JScrollPane ( areaEMsg );
+        scrollEMsg.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
+        scrollEMsg.setBounds(410, 220, 320, 80);
+        f.add(scrollEMsg);
+
+        JLabel lDMsg = new JLabel("Decrypted Message:");
+        lDMsg.setBounds(410, 310, 130, 20);
+        f.add(lDMsg);
+        areaDMsg = new JTextArea();
+        areaDMsg.setEditable (true); // set textArea non-editable
+        areaDMsg.setLineWrap(true);
+        JScrollPane scrollDMsg = new JScrollPane ( areaDMsg );
+        scrollDMsg.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
+        scrollDMsg.setBounds(410, 340, 320, 80);
+        f.add(scrollDMsg);
+
         f.setLayout(null);
         f.setSize(800, 800);
         f.setVisible(true);
     }
 
     private class BtGenerateKeyAction implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent e) {
             myRSA = new MyRSA(encryptLevelsI[cb.getSelectedIndex()]);
             //System.out.println(encryptLevelsI[cb.getSelectedIndex()]);
@@ -93,6 +137,23 @@ public class MyRSAGui {
             areaN.setText(myRSA.getNString());
             areaP.setText(myRSA.getPString());
             areaQ.setText(myRSA.getQString());
+        }
+    }
+
+    private class BtEncryptAction implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String message = areaMsg.getText();
+            byte[] eMsg = myRSA.encrypt(message.getBytes());
+            areaEMsg.setText(myRSA.bytesToHex(eMsg));
+        }
+    }
+
+    private class BtDecryptAction implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            byte[] eMsgBytes = myRSA.hexStringToByteArray(areaEMsg.getText());
+            areaDMsg.setText(new String(myRSA.decrypt(eMsgBytes)));
         }
     }
 
