@@ -11,8 +11,8 @@ public class MyRSAGui {
     JButton btGenerateKey, btEncrypt, btDecrypt;
     JTextArea areaE, areaN, areaD, areaP, areaQ, areaMsg, areaEMsg, areaDMsg;
     MyRSA myRSA;
-    String encryptLevels[] = {"RSA-32", "RSA-64", "RSA-128", "RSA-256", "RSA-512", "RSA-1024"};
-    int encryptLevelsI[] = {32, 64, 128, 256, 512, 1024};
+    String encryptLevels[] = {"RSA-512", "RSA-256", "RSA-128", "RSA-64", "RSA-32", "RSA-1024"};
+    int encryptLevelsI[] = {512, 256, 128, 64, 32, 1024};
     public MyRSAGui() {
         f = new JFrame("RSA");
         cb = new JComboBox(encryptLevels);
@@ -142,17 +142,29 @@ public class MyRSAGui {
 
     private class BtEncryptAction implements ActionListener {
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void actionPerformed(ActionEvent event) {
+            byte[] d = MyRSA.hexStringToByteArray(areaD.getText());
+            byte[] e = MyRSA.hexStringToByteArray(areaE.getText());
+            byte[] n = MyRSA.hexStringToByteArray(areaN.getText());
+            byte[] p = MyRSA.hexStringToByteArray(areaP.getText());
+            byte[] q = MyRSA.hexStringToByteArray(areaQ.getText());
+            myRSA = new MyRSA(new MyBigInteger(e), new MyBigInteger(d), new MyBigInteger(n), new MyBigInteger(p), new MyBigInteger(q));
             String message = areaMsg.getText();
             byte[] eMsg = myRSA.encrypt(message.getBytes());
-            areaEMsg.setText(myRSA.bytesToHex(eMsg));
+            areaEMsg.setText(MyRSA.bytesToHex(eMsg));
         }
     }
 
     private class BtDecryptAction implements ActionListener {
         @Override
-        public void actionPerformed(ActionEvent e) {
-            byte[] eMsgBytes = myRSA.hexStringToByteArray(areaEMsg.getText());
+        public void actionPerformed(ActionEvent event) {
+            byte[] d = MyRSA.hexStringToByteArray(areaD.getText());
+            byte[] e = MyRSA.hexStringToByteArray(areaE.getText());
+            byte[] n = MyRSA.hexStringToByteArray(areaN.getText());
+            byte[] p = MyRSA.hexStringToByteArray(areaP.getText());
+            byte[] q = MyRSA.hexStringToByteArray(areaQ.getText());
+            myRSA = new MyRSA(new MyBigInteger(e), new MyBigInteger(d), new MyBigInteger(n), new MyBigInteger(p), new MyBigInteger(q));
+            byte[] eMsgBytes = MyRSA.hexStringToByteArray(areaEMsg.getText());
             areaDMsg.setText(new String(myRSA.decrypt(eMsgBytes)));
         }
     }

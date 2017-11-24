@@ -45,11 +45,13 @@ public class MyRSA {
         this.d = e.modInverse(phi, alg);
     }
 
-    public MyRSA(MyBigInteger e, MyBigInteger d, MyBigInteger n)
+    public MyRSA(MyBigInteger e, MyBigInteger d, MyBigInteger n, MyBigInteger p, MyBigInteger q)
     {
         this.e = e;
         this.d = d;
         this.n = n;
+        this.p = p;
+        this.q = q;
     }
 
     public static void main(String[] args) {
@@ -103,7 +105,7 @@ public class MyRSA {
         return bytesToHex(q.getBytesBI());
     }
 
-    public String bytesToHex(byte[] bytes) {
+    public static String bytesToHex(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
         for ( int j = 0; j < bytes.length; j++ ) {
             int v = bytes[j] & 0xFF;
@@ -113,7 +115,7 @@ public class MyRSA {
         return new String(hexChars);
     }
 
-    public byte[] hexStringToByteArray(String s) {
+    public static byte[] hexStringToByteArray(String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
