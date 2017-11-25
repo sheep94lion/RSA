@@ -132,6 +132,7 @@ public class MyBigInteger {
         r = nD.getRAndBeD();
 
         for (int i = 0; i < k; i++) {
+            //System.out.println(i);
             int l = nM2.getByteLength();
             byte[] bytes = new byte[l];
             rand.nextBytes(bytes);
@@ -223,17 +224,6 @@ public class MyBigInteger {
                 remain.mod(n);
             }
         }
-        /*
-        for (; i.compareTo(pow) < 0; i.incOne()) {
-            remain = this.multiply(remain);
-            if (remain.compareTo(n) >= 0) {
-                MyBigInteger temp = new MyBigInteger(0);
-                MyBigInteger q = new MyBigInteger(0);
-                remain.copyTo(temp);
-                temp.divide(n, q, remain);
-            }
-        }
-        */
         return remain;
     }
 
@@ -588,6 +578,7 @@ public class MyBigInteger {
                 myBI.add(new MyBigInteger(2));
                 //System.out.println("next candidate");
                 if (myBI.compareTo(max) > 0) {
+                    //System.out.println("recall");
                     return randomPrime(byteLength, r, alg);
                 }
 
@@ -628,6 +619,36 @@ public class MyBigInteger {
         rec[2].copyTo(u);
         rec[1].copyTo(v);
         MyBigInteger qu = q.multiply(u);
+        qu.mod(n);
+        while (v.compareTo(qu) < 0) {
+            v.add(n);
+        }
+        v.subtract(qu);
+        d.mod(n);
+        u.mod(n);
+        v.mod(n);
+        MyBigInteger result[] = {d, u, v};
+        return result;
+    }
+
+    public MyBigInteger[] gcdExtendedLoop(MyBigInteger b, MyBigInteger n) {
+        MyBigInteger one = new MyBigInteger(1);
+        MyBigInteger zero = new MyBigInteger(0);
+        if (b.compareTo(zero) == 0) {
+            MyBigInteger[] result = {this, one, zero};
+            return result;
+        }
+        MyBigInteger q = new MyBigInteger(0);
+        MyBigInteger r = new MyBigInteger(0);
+        this.divide(b, q, r);
+        MyBigInteger d = new MyBigInteger(0);
+        MyBigInteger u = new MyBigInteger(0);
+        MyBigInteger v = new MyBigInteger(0);
+        MyBigInteger[] rec = b.gcdExtended(r, n);
+        rec[0].copyTo(d);
+        rec[2].copyTo(u);
+        rec[1].copyTo(v);
+        MyBigInteger qu = q.multiply(u);
         while (v.compareTo(qu) < 0) {
             v.add(n);
         }
@@ -637,6 +658,7 @@ public class MyBigInteger {
     }
 
     public MyBigInteger modInverse(MyBigInteger n, int alg) {
+        alg = 0;//always use my own method
         if (alg == 1) {
             BigInteger aJ = this.giveupAnd2BigInteger();
             BigInteger nJ = n.giveupAnd2BigInteger();

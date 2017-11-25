@@ -1,4 +1,3 @@
-import java.io.UnsupportedEncodingException;
 import java.util.Random;
 
 public class MyRSA {
@@ -15,14 +14,14 @@ public class MyRSA {
 
     public MyRSA(int bitLength) {
         this.bitLength = bitLength;
-        /*
-        if (bitLength < 128) {
+
+        if (bitLength < 256) {
             alg = 0;
         } else {
             alg = 1;
         }
-        */
-        alg = 1;
+
+        //alg = 1;
         rand = new Random();
         this.p = MyBigInteger.randomPrime(bitLength/8, rand, alg);
         this.q = MyBigInteger.randomPrime(bitLength/8, rand, alg);
@@ -42,6 +41,7 @@ public class MyRSA {
                 e = MyBigInteger.randomPrime(bitLength/16, rand, alg);
             }
         }
+        //System.out.println("modInverse");
         this.d = e.modInverse(phi, alg);
     }
 

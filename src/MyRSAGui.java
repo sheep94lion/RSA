@@ -11,7 +11,7 @@ public class MyRSAGui {
     JButton btGenerateKey, btEncrypt, btDecrypt;
     JTextArea areaE, areaN, areaD, areaP, areaQ, areaMsg, areaEMsg, areaDMsg;
     MyRSA myRSA;
-    String encryptLevels[] = {"RSA-512", "RSA-256", "RSA-128", "RSA-64", "RSA-32", "RSA-1024"};
+    String encryptLevels[] = {"RSA-1024", "RSA-512", "RSA-256", "RSA-128", "RSA-64", "RSA-2048"};
     int encryptLevelsI[] = {512, 256, 128, 64, 32, 1024};
     public MyRSAGui() {
         f = new JFrame("RSA");
@@ -125,6 +125,7 @@ public class MyRSAGui {
         f.setLayout(null);
         f.setSize(800, 800);
         f.setVisible(true);
+        f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     }
 
     private class BtGenerateKeyAction implements ActionListener {
